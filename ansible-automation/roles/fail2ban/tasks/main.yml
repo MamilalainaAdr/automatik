@@ -6,7 +6,7 @@
 
 - name: Create jail.local from template
   template:
-    src: jail.local
+    src: jail.conf
     dest: /etc/fail2ban/jail.local
     owner: root
     group: root
