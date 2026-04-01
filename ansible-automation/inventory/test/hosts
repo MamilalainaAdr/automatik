@@ -1,11 +1,13 @@
 [central]
+# assuming the central server is local, else provide ansible_host, ansible_user & ansible_ssh_private_key_file
 localhost ansible_connection=local
+# central ansible_host=<SERVER_IP> ansible_ssh_private_key_file=<PATH_TO_SERVER_SSH_PRIVATE_KEY>
 
 [docker_servers]
-vm1-docker ansible_host=192.168.200.69 ansible_ssh_private_key_file=~/.ssh/vm1-docker.pem
+# docker_server1 ansible_host=<SERVER_IP> ansible_ssh_private_key_file=<PATH_TO_SERVER_SSH_PRIVATE_KEY>
 
 [cluster_servers]
-vm2-docker ansible_host=192.168.200.104 ansible_ssh_private_key_file=~/.ssh/vm2-microk8s.pem
+# cluster_server1 ansible_host=<SERVER_IP> ansible_ssh_private_key_file=<PATH_TO_SERVER_SSH_PRIVATE_KEY>
 
 [all:vars]
 ansible_user=root
