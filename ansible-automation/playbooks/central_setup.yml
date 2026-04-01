@@ -1,0 +1,6 @@
+---
+- name: Setup central monitoring and security services
+  hosts: central
+  # become: yes
+  roles:
+    - monitoring_central

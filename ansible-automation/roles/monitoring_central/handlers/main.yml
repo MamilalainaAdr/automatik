@@ -1,0 +1,10 @@
+---
+- name: restart monitoring stack
+  community.docker.docker_compose_v2:
+    project_src: /home/security/monitoring
+    state: restarted
+
+- name: restart crowdsec stack
+  community.docker.docker_compose_v2:
+    project_src: /home/security/crowdsec
+    state: restarted

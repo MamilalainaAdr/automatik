@@ -1,0 +1,14 @@
+[central]
+localhost ansible_connection=local
+
+[docker_servers]
+vm1-docker ansible_host=192.168.200.69 ansible_ssh_private_key_file=~/.ssh/vm1-docker.pem
+
+[cluster_servers]
+vm2-docker ansible_host=192.168.200.104 ansible_ssh_private_key_file=~/.ssh/vm2-microk8s.pem
+
+[all:vars]
+ansible_user=root
+ansible_ssh_common_args='-o IdentitiesOnly=yes'
+crowdsec_server_url=http://127.0.0.1:8080
+prometheus_server_url=http://127.0.0.1:9090

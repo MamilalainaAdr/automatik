@@ -1,0 +1,18 @@
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    environment:
+      - COLLECTIONS=linux sshd http-cve whitelist-good-actors nginx
+      - GID=1000
+      - UID=1000
+    volumes:
+      - crowdsec_data:/var/lib/crowdsec/data
+      - crowdsec_config:/etc/crowdsec
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  crowdsec_data:
+  crowdsec_config:
