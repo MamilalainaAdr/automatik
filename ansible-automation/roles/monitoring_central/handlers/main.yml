@@ -1,10 +1,63 @@
 ---
-- name: restart monitoring stack
-  community.docker.docker_compose_v2:
-    project_src: /home/security/monitoring
-    state: restarted
+- name: Check if Docker is installed
+  command: docker --version
+  register: docker_installation_check
+  ignore_errors: yes
+  changed_when: false
 
-- name: restart crowdsec stack
+- name: Install Docker (if not present)
+  block:
+    - name: Copy Docker installation script
+      copy:
+        src: install-docker.sh
+        dest: /tmp/install-docker.sh
+        mode: '0755'
+
+    - name: Run Docker installation script
+      command: /tmp/install-docker.sh
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+  when: docker_installation_check.rc != 0
+
+- name: Create directories for services
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /home/mamilalaina/security/monitoring
+    - /home/mamilalaina/security/crowdsec
+
+- name: Copy prometheus.yml file
+  copy:
+    src: prometheus.yml
+    dest: /home/mamilalaina/security/monitoring/prometheus.yml
+
+- name: Deploy Prometheus/Grafana stack
+  copy:
+    src: docker-compose.monitoring.yml
+    dest: /home/mamilalaina/security/monitoring/docker-compose.yml
+  notify: restart monitoring stack
+
+- name: Deploy Crowdsec central
+  copy:
+    src: docker-compose.crowdsec.yml
+    dest: /home/mamilalaina/security/crowdsec/docker-compose.yml
+  notify: restart crowdsec stack
+
+- name: Start monitoring stack
   community.docker.docker_compose_v2:
-    project_src: /home/security/crowdsec
-    state: restarted
+    project_src: /home/mamilalaina/security/monitoring
+    state: present
+  register: monitoring_up
+
+- name: Start crowdsec stack
+  community.docker.docker_compose_v2:
+    project_src: /home/mamilalaina/security/crowdsec
+    state: present
+  register: crowdsec_up
