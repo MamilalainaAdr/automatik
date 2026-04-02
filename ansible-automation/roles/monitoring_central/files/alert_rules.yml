@@ -1,0 +1,13 @@
+groups:
+- name: node_alerts
+  rules:
+  - alert: HighCPUUsage
+    expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+  - alert: ServiceDown
+    expr: probe_success == 0
+    for: 1m
+    annotations:
+      summary: "Endpoint {{ $labels.instance }} is down"

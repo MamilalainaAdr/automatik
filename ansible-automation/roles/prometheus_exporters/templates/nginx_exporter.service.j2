@@ -1,9 +1,9 @@
 [Unit]
-Description=Prometheus Node Exporter
+Description=NGINX Exporter
 After=network.target
 
 [Service]
-ExecStart=/opt/exporters/node_exporter
+ExecStart=/opt/exporters/nginx-prometheus-exporter
 Restart=always
 
 [Install]

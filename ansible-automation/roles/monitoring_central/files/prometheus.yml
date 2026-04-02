@@ -2,7 +2,37 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - "alert_rules.yml"
+
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
+  - job_name: 'node'
+    file_sd_configs:
+      - files: ['/etc/prometheus/targets/docker_servers.yml', '/etc/prometheus/targets/cluster_nodes.yml']
+  - job_name: 'docker'
+    file_sd_configs:
+      - files: ['/etc/prometheus/targets/docker_exporter.yml']
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    file_sd_configs:
+      - files: ['/etc/prometheus/targets/blackbox.yml']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+  - job_name: 'kube_state_metrics'
+    file_sd_configs:
+      - files: ['/etc/prometheus/targets/kube_state_metrics.yml']

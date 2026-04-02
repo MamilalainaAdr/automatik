@@ -1,9 +1,9 @@
 [Unit]
-Description=Prometheus Node Exporter
+Description=Blackbox Exporter
 After=network.target
 
 [Service]
-ExecStart=/opt/exporters/node_exporter
+ExecStart=/opt/exporters/blackbox_exporter
 Restart=always
 
 [Install]

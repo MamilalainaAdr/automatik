@@ -5,13 +5,19 @@
     state: directory
     mode: '0755'
 
+- name: Expose Docker metrics
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  notify: restart docker
+
 - name: Install node_exporter
   unarchive:
     src: "https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz"
     dest: /opt/exporters
     remote_src: yes
+    extra_opts: [--strip-components=1]
     creates: /opt/exporters/node_exporter
-  notify: restart node_exporter
 
 - name: Create systemd service for node_exporter
   template:
@@ -24,7 +30,13 @@
     src: "https://github.com/prometheus/blackbox_exporter/releases/download/v0.28.0/blackbox_exporter-0.28.0.linux-amd64.tar.gz"
     dest: /opt/exporters
     remote_src: yes
+    extra_opts: [--strip-components=1]
     creates: /opt/exporters/blackbox_exporter
+
+- name: Create systemd service for blackbox_exporter
+  template:
+    src: blackbox_exporter.service.j2
+    dest: /etc/systemd/system/blackbox_exporter.service
   notify: restart blackbox_exporter
 
 - name: Install nginx_exporter
@@ -32,11 +44,29 @@
     src: "https://github.com/nginx/nginx-prometheus-exporter/releases/download/v1.5.1/nginx-prometheus-exporter_1.5.1_linux_amd64.tar.gz"
     dest: /opt/exporters
     remote_src: yes
+    extra_opts: [--strip-components=1]
     creates: /opt/exporters/nginx-prometheus-exporter
+
+- name: Create systemd service for nginx
+  template:
+    src: nginx_exporter.service.j2
+    dest: /etc/systemd/system/nginx_exporter.service
   notify: restart nginx_exporter
 
-- name: Ensure exporters are running
+- name: Unmask all exporters
   systemd:
+    name: "{{ item }}"
+    masked: no
+  loop:
+    - node_exporter
+    - blackbox_exporter
+    - nginx_exporter
+
+- name: Reload systemd
+  command: systemctl daemon-reload
+
+- name: Ensure exporters are running
+  service:
     name: "{{ item }}"
     state: started
     enabled: yes
