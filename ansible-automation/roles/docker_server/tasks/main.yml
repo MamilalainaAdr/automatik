@@ -35,7 +35,7 @@
     state: started
     enabled: yes
 
-- - name: Install Certbot via snap
+- name: Install Certbot via snap
   snap:
     name: certbot
     classic: yes

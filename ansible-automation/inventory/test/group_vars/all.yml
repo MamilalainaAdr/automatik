@@ -1,0 +1,6 @@
+monitoring_dir: /home/mamilalaina/security/monitoring
+crowdsec_dir: /home/mamilalaina/security/crowdsec
+timezone: UTC
+endpoints_to_monitor:
+  - url: http://localhost:80
+  - url: https://example.com/health
