@@ -24,26 +24,37 @@
 
   when: crowdsec_installation_check.rc != 0
 
+- name: Check if agent has already registered
+  stat: 
+    path: /etc/crowdsec/local_api_credentials.yaml
+  register: local_api_file
+  
 - name: Register agent with central server
-  command: cscli enroll --url {{ crowdsec_server_url }}
+  command: cscli lapi register -u {{ crowdsec_server_url }} --machine {{ inventory_hostname }}
   args:
     creates: /etc/crowdsec/.enrolled
+  when: not local_api_file.stat.exists
   notify: restart crowdsec
 
-- name: Configure bouncers
-  block:
-    - name: Install iptables bouncer
-      apt:
-        name: crowdsec-firewall-bouncer-iptables
-        state: present
+- name: Install bouncers dependencies
+  apt:
+    name:
+      - lua5.1
+      - libnginx-mod-http-lua
+      - luarocks
+      - gettext-base
+      - lua-cjson
+    state: present
 
-    - name: Install nginx bouncer dependencies
-      command: apt install lua5.1 libnginx-mod-http-lua luarocks gettext-base lua-cjson
-      
-    - name: Install nginx bouncer
-      apt: 
-        name: crowdsec-nginx-bouncer
-        state: present
+- name: Install iptables bouncer
+  apt:
+    name: crowdsec-firewall-bouncer-iptables
+    state: present
+
+- name: Install nginx bouncer
+  apt:
+    name: crowdsec-nginx-bouncer
+    state: present
 
 - name: Add collections
   command: cscli collections install {{ item }}

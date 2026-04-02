@@ -1,0 +1,9 @@
+---
+- name: Configure Docker servers
+  hosts: docker_servers
+  become: yes
+  roles:
+    - docker_server
+    - fail2ban
+    - crowdsec_agent
+    - prometheus_exporters
