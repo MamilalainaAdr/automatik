@@ -1,0 +1,10 @@
+---
+- name: Configure Cluster servers
+  hosts: cluster_servers
+  become: yes
+  roles:
+    - cluster_server
+    - fail2ban
+    - crowdsec_agent
+    - prometheus_exporters   # pour node_exporter
+    - microk8s_monitoring    # pour kube-state-metrics

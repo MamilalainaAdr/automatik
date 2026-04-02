@@ -1,0 +1,61 @@
+---
+- name: Check if microk8s is installed
+  command: microk8s version
+  register: is_microk8s_present
+  ignore_errors: yes
+  changed_when: false
+  
+- name: Install MicroK8s via snap
+  block:
+    - name: Install package
+      snap:
+        name: microk8s
+        classic: yes
+        state: present
+
+    - name: Add current user to microk8s group
+      user:
+        name: "{{ ansible_user }}"
+        groups: microk8s
+        append: yes
+
+    - name: Wait for MicroK8s to be ready
+      command: microk8s status --wait-ready
+      changed_when: false
+
+    - name: Enable required addons
+      command: microk8s enable {{ item }}
+      loop:
+        - dns
+        - hostpath-storage
+        - ingress
+        - metrics-server
+      changed_when: false
+  when: is_microk8s_present.rc != 0
+
+- name: Check if Docker is installed
+  command: docker --version
+  register: docker_installation_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Install Docker (if not present)
+  block:
+    - name: Copy Docker installation script
+      copy:
+        src: install-docker.sh
+        dest: /tmp/install-docker.sh
+        mode: '0755'
+
+    - name: Run Docker installation script
+      command: /tmp/install-docker.sh
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+  when: docker_installation_check.rc != 0
+
+
